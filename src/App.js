@@ -1,26 +1,29 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { Component } from 'react';
 import './App.css';
+import Site from './components/Site';
+import theme from './configs/materialTheme';
+import { MuiThemeProvider} from '@material-ui/core/styles';
+// react routes imports
+import { BrowserRouter } from 'react-router-dom';
+// redux store
+import { Provider } from 'react-redux';
+import initiateStore from './redux/configStore';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+// initializate the store creation
+const store = initiateStore();
+
+class App extends Component {
+  render() {
+    return (
+      <MuiThemeProvider theme={theme}>
+          <Provider store={store}>
+            <BrowserRouter>
+                <Site />
+            </BrowserRouter>
+          </Provider>
+      </MuiThemeProvider>
+    );
+  }
 }
 
 export default App;
