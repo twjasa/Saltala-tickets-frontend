@@ -218,7 +218,7 @@ class Ajax {
                             message: 'Not Authorized User'
                         });
                         localStorage.removeItem('vntstdtkn');
-                        window.location.replace(`${window.location.origin}/ingresar`);
+                        window.location.replace(`${window.location.origin}/`);
                     }
                     reject(this.Success);
                 }
