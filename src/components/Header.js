@@ -50,9 +50,10 @@ class MenuAppBar extends React.Component {
   }
 
   componentDidMount(){
+    console.log(this.props.reducer)
     console.log(this.props.state)
-    // if(!this.props.logedUser)
-    //   this.props.history.push('/');
+    if(!this.props.reducer.tokenData)
+      this.props.history.push('/');
   }
 
   handleChange = event => {
@@ -66,6 +67,9 @@ class MenuAppBar extends React.Component {
   handleClose = () => {
     this.setState({ anchorEl: null });
   };
+
+  componentDidUpdate(){
+  }
 
   onClickLogout(){
     if (!this.sendLogout) {

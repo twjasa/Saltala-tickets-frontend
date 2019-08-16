@@ -61,8 +61,8 @@ class BodyAdminTickets extends React.Component {
     this.ajaxRequestTickets();
   }
 
-  componentDidUpdate(prevProps){
-    console.log(this.props.logedUser)
+  componentDidUpdate(){
+    console.log(this.props.reducer)
     // console.log(this.props.reducer)
     if(this.props.logedUser){
       if(!this.state.rows)
