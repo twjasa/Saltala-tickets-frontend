@@ -10,7 +10,11 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
 import { withStyles } from '@material-ui/core/styles';
-import Ajax from '../util/Ajax';
+import { withRouter } from 'react-router';
+import { connect } from 'react-redux';
+import { requestAuth, clearErrorMessage } from '../redux/actions/authActions';
+
+
 
 const styles = theme => ({
   paper: {
@@ -45,24 +49,24 @@ class SignIn extends React.Component {
       email: '',
       password: '',
     };
+    this.pressEnterOnPassword = this.pressEnterOnPassword.bind(this);
   }
 
   handleChange = name => event => {
     this.setState({
       [name]: event.target.value,
-    },()=>{
-      if(this.state.email!==""){
-        this.setState({isEmailEmpty:false});
+    }, () => {
+      if (this.state.email !== "") {
+        this.setState({ isEmailEmpty: false });
       }
-      if(this.state.password!==""){
-        this.setState({isPasswordEmpty:false});        
+      if (this.state.password !== "") {
+        this.setState({ isPasswordEmpty: false });
       }
     });
-    
+
   };
 
   handleClickSignIn = () => {
-    console.log(this.state.email)
     if (this.state.email === '')
       this.setState({ isEmailEmpty: true });
 
@@ -71,15 +75,50 @@ class SignIn extends React.Component {
 
     if (this.state.password !== '' && this.state.email !== '') {
       // do sign in and redirect to tickets
-      let request = new Ajax('user/login', {
-        method: 'POST',
-        body: {
-          email: this.state.email,
-          password: this.state.password,
-        }
-      });
+      this.storeTokenInRedux();
     }
   };
+
+  handleClickCheckToken = () => {
+    console.log(this.props.logedUser)
+    console.log(this.props.tokenFromApi)
+  };
+
+  storeTokenInRedux() {
+    // request a new token to API
+    return this.props.requestAuth({
+      email: this.state.email,
+      password: this.state.password
+    });
+  }
+
+  componentDidUpdate() {
+    // console.log(this.props.logedUser)
+    // if (this.props.logedUser) {
+    //   localStorage.setItem('vntstdtkn', JSON.stringify(this.props.reducer));
+    //   this.props.history.push('/tickets');
+    // }
+    console.log(this.props.reducer)
+    if (this.props.tokenFromApi) {
+      localStorage.setItem('vntstdtkn', JSON.stringify(this.props.reducer));
+      if (!this.props.history.location.state) {
+        return this.props.history.goBack();
+      }
+      if (this.props.history.location.state.fromSignIn || this.props.history.location.state.fromReset) {
+        return this.props.history.push('/');
+      }
+    }
+  }
+
+  pressEnterOnPassword(evnt) {
+    if (evnt.key === 'Enter') {
+      this.storeTokenInRedux();
+    }
+  }
+
+  componentDidMount(){
+    console.log(this.props.logedUser)
+  }
 
 
   render() {
@@ -123,6 +162,7 @@ class SignIn extends React.Component {
             autoComplete="current-password"
             onChange={this.handleChange('password')}
             value={this.state.password}
+            onKeyDown={this.pressEnterOnPassword}
           />
           <Button
             type="submit"
@@ -134,6 +174,16 @@ class SignIn extends React.Component {
           >
             Iniciar Sesion
           </Button>
+          {/* <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            className={classes.submit}
+            onClick={this.handleClickCheckToken}
+          >
+            CheckToken
+          </Button> */}
           <Grid container>
             <Grid item>
               <Link href="/registrate" variant="body2">
@@ -145,4 +195,15 @@ class SignIn extends React.Component {
       </div>
     );
   }
-} export default withStyles(styles)(SignIn);
+} export default withRouter(connect(
+  state => ({
+    reducer: state.authReducer,
+    loadingRequest: state.authReducer.loading,
+    requestError: state.authReducer.error,
+    tokenFromApi: state.authReducer.successfulRequest,
+    logedUser: state.authReducer.logedUser,
+  }),
+  {
+    requestAuth,
+    clearErrorMessage,
+  })(withStyles(styles)(SignIn)));

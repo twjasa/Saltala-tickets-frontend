@@ -21,6 +21,10 @@ class Site extends React.Component{
       this.saveTokenInRequests();
     }
 
+    componentDidMount(){
+      console.log(localStorage)      
+    }
+
     getOauthToken() {
       if (localStorage.getItem('vntstdtkn')){
         return `${JSON.parse(localStorage.getItem('vntstdtkn')).tokenData.token_type} ${JSON.parse(localStorage.getItem('vntstdtkn')).tokenData.token}`;

@@ -1,17 +1,18 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
 import AccountCircle from '@material-ui/icons/AccountCircle';
-import Switch from '@material-ui/core/Switch';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormGroup from '@material-ui/core/FormGroup';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
+import Ajax from '../util/Ajax';
+import { connect } from 'react-redux';
+import { logout } from '../redux/actions/authActions';
+import { withRouter } from 'react-router';
+
+
 
 const styles = {
   root: {
@@ -26,18 +27,33 @@ const styles = {
   },
   title: {
     flexGrow: 1,
-    color: '#ffffff'
+    color: '#ffffff',
+    cursor: 'auto'
   },
   icon: {
     color: '#ffffff'
+  },
+  colorDefault:{
+    color: '#dddd00'
   }
 };
 
 class MenuAppBar extends React.Component {
-  state = {
-    auth: true,
-    anchorEl: null,
-  };
+  constructor(props) {
+    super (props);
+    this.state = {
+      anchorEl: null,
+    };
+    this.sendLogout = false;
+    this.onClickLogout = this.onClickLogout.bind(this);
+    // this.pushToHome = this.pushToHome.bind(this);
+  }
+
+  componentDidMount(){
+    console.log(this.props.state)
+    // if(!this.props.logedUser)
+    //   this.props.history.push('/');
+  }
 
   handleChange = event => {
     this.setState({ auth: event.target.checked });
@@ -51,6 +67,25 @@ class MenuAppBar extends React.Component {
     this.setState({ anchorEl: null });
   };
 
+  onClickLogout(){
+    if (!this.sendLogout) {
+      this.sendLogout = true;
+      let logout = new Ajax('user/logout');
+      logout.result().finally(() => {
+        localStorage.removeItem('vntstdtkn');
+        this.props.logout();
+        this.sendLogout = false;
+        Ajax.token = '';
+        this.props.history.push('/');
+    });
+    }
+  };
+
+  // pushToHome(){
+  //   if(this.props.logedUser)
+  //     this.props.history.push('/');
+  // }
+
   render() {
     const { classes } = this.props;
     const { auth, anchorEl } = this.state;
@@ -60,10 +95,9 @@ class MenuAppBar extends React.Component {
       <div className={classes.root}>
         <AppBar position="static">
           <Toolbar>
-            <Typography variant="h6" className={classes.title}>
+            <Typography variant="h6" className={classes.title} onClick={this.pushToHome}>
               Saltala Tickets
           </Typography>
-            {auth && (
               <div>
                 <IconButton
                   aria-owns={open ? 'menu-appbar' : undefined}
@@ -87,105 +121,19 @@ class MenuAppBar extends React.Component {
                   open={open}
                   onClose={this.handleClose}
                 >
-                  <MenuItem onClick={this.handleClose}>Logout</MenuItem>
+                  <MenuItem onClick={this.onClickLogout}>Logout</MenuItem>
                 </Menu>
               </div>
-            )}
           </Toolbar>
         </AppBar>
       </div>
     );
   }
-} export default withStyles(styles)(MenuAppBar);
-
-
-// import React from 'react';
-// import { makeStyles, withStyles } from '@material-ui/core/styles';
-// import AppBar from '@material-ui/core/AppBar';
-// import Toolbar from '@material-ui/core/Toolbar';
-// import Typography from '@material-ui/core/Typography';
-// import IconButton from '@material-ui/core/IconButton';
-// import MenuIcon from '@material-ui/icons/Menu';
-// import AccountCircle from '@material-ui/icons/AccountCircle';
-// import Switch from '@material-ui/core/Switch';
-// import FormControlLabel from '@material-ui/core/FormControlLabel';
-// import FormGroup from '@material-ui/core/FormGroup';
-// import MenuItem from '@material-ui/core/MenuItem';
-// import Menu from '@material-ui/core/Menu';
-
-// const styles = theme => ({
-//   root: {
-//     flexGrow: 1,
-//   },
-//   menuButton: {
-//     marginRight: 2,
-//   },
-//   title: {
-//     flexGrow: 1,
-//     color: '#ffffff'
-//   },
-//   icon:{
-//     color:'#ffffff'
-//   }
-// });
-
-// class Header extends React.Component {
-//   constructor(props){
-//     super(props);
-//     this.state ={
-//       anchorEl: null,
-//     }
-//   }
-
-//   onClickOpenUserMenu= event =>{
-//     this.setState({ anchorEl: event.currentTarget });
-//   }
-
-//   handleClose = () => {
-//     this.setState({ anchorEl: null });
-//   };
-
-//   render (){
-//     const { classes } = this.props;
-//     return(
-//       <div className={classes.root}>
-//       <AppBar position="static">
-//         <Toolbar>
-//           <Typography variant="h6" className={classes.title}>
-//             Saltala Tickets
-//           </Typography>
-//           <div>
-//             <IconButton
-//               aria-label="account of current user"
-//               aria-controls="menu-appbar"
-//               aria-haspopup="true"
-//               onClick={this.onClickOpenUserMenu}
-//               color="inherit"
-//             >
-//               <AccountCircle />
-//             </IconButton>
-//             <Menu
-//               id="menu-appbar"
-//               anchorEl={this.state.anchorEl}
-//               anchorOrigin={{
-//                 vertical: 'top',
-//                 horizontal: 'right',
-//               }}
-//               keepMounted
-//               transformOrigin={{
-//                 vertical: 'top',
-//                 horizontal: 'right',
-//               }}
-//               open={this.state.anchorEl}
-//               onClose={this.handleClose}
-//             >
-//               <MenuItem onClick={this.handleClose}>Profile</MenuItem>
-//               <MenuItem onClick={this.handleClose}>My account</MenuItem>
-//             </Menu>
-//           </div>
-//         </Toolbar>
-//       </AppBar>
-//     </div>
-//     );
-//   }
-// } export default withStyles(styles)(Header);
+} export default withRouter(connect(
+  state=>({
+    user: state.authReducer.logedUser,
+    state: state.authReducer,
+  }),
+  {
+    logout
+  })(withStyles(styles)(MenuAppBar)));

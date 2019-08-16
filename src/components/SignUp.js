@@ -11,6 +11,8 @@ import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
 import { withStyles } from '@material-ui/core/styles';
 import Ajax from '../util/Ajax';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
 
 
 const styles = theme => ({
@@ -53,6 +55,7 @@ class SignUp extends React.Component {
       isEmptyLastname: false,
       isEmptyEmail: false,
       isEmptyPassword: false,
+      isAdmin: false,
       name: '',
       lastname: '',
       email: '',
@@ -61,51 +64,66 @@ class SignUp extends React.Component {
     };
   }
 
+  checkFormErrors() {
+    if (this.state.email !== ""){
+      this.setState({ isEmptyEmail: false });
+    }else{
+      this.setState({ isEmptyEmail: true });
+    }
+
+    if (this.state.password !== ""){
+      this.setState({ isEmptyPassword: false });
+    }else{
+      this.setState({ isEmptyPassword: true });
+    }
+
+    if (this.state.lastname !== ""){
+      this.setState({ isEmptyLastname: false });
+    }else{
+      this.setState({ isEmptyLastname: true });
+    } 
+
+    if (this.state.name !== ""){
+      this.setState({ isEmptyName: false });
+    }else{
+      this.setState({ isEmptyName: true });
+    }
+  }
+
   handleChange = name => event => {
-    this.setState({
-      [name]: event.target.value,
-    }, () => {
-      if (this.state.email !== "")
-        this.setState({ isEmptyEmail: false });
-
-      if (this.state.password !== "")
-        this.setState({ isEmptyPassword: false });
-
-      if (this.state.lastname !== "")
-        this.setState({ isEmptyLastname: false });
-
-      if (this.state.name !== "")
-        this.setState({ isEmptyName: false });
-    });
+    if (name === 'isAdmin') {
+      this.setState({ isAdmin: !this.state.isAdmin },()=>{
+        this.checkFormErrors();
+      })
+    } else {
+      this.setState({
+        [name]: event.target.value,
+      }, () => {
+        this.checkFormErrors();
+      });
+    }
   };
 
   handleClickSignUp = () => {
-    if (this.state.email === '')
-      this.setState({ isEmptyEmail: true });
+    this.checkFormErrors();
 
-    if (this.state.password === '')
-      this.setState({ isEmptyPassword: true });
-
-    if (this.state.lastname === '')
-      this.setState({ isEmptyLastname: true });
-
-    if (this.state.name === '')
-      this.setState({ isEmptyName: true });
-
-    if (this.state.password !== '' && this.state.email !== '') {
+    if (this.state.password !== '' && this.state.email !== '' && this.state.lastname !=='' && this.state.name!=='') {
       // do sign in and redirect to tickets
+      let isAdmin = this.state.isAdmin?'admin':'user';
       let request = new Ajax('user/signup/', {
         method: 'POST',
         body: {
           email: this.state.email.toLowerCase(),
           password: this.state.password,
+          name: this.state.name,
+          lastname: this.state.lastname,
+          role: isAdmin,
         }
       });
-      console.log(request)
       request.result().then(() => {
-        this.setState({success:true});
+        this.setState({ success: true });
         return;
-      }).catch(response=>{
+      }).catch(response => {
         console.log(response);
       })
     }
@@ -184,6 +202,19 @@ class SignUp extends React.Component {
                 onChange={this.handleChange('password')}
               />
             </Grid>
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={this.state.isAdmin}
+                    onChange={this.handleChange('isAdmin')}
+                    value="isAdmin"
+                    color="primary"
+                  />
+                }
+                label="Eres administrador?"
+              />
+            </Grid>
           </Grid>
           {
             this.state.success &&
@@ -198,6 +229,7 @@ class SignUp extends React.Component {
             color="primary"
             className={classes.submit}
             onClick={this.handleClickSignUp}
+            disabled={this.state.success}
           >
             Registrar
           </Button>
