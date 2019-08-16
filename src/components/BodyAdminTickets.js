@@ -15,7 +15,11 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import EditIcon from '@material-ui/icons/Edit';
+import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
+import { MenuItem } from '@material-ui/core';
+import { red } from '@material-ui/core/colors';
 
 
 
@@ -43,21 +47,27 @@ class BodyAdminTickets extends React.Component {
       open: false,
       title: '',
       description: '',
+      status: '',
+      ticketIdSelected: null
     }
     this.isLoading = false;
     this.openDialog = this.openDialog.bind(this);
+    this.onClickUpdateTicket = this.onClickUpdateTicket.bind(this);
+    this.onClickDelete = this.onClickDelete.bind(this);
 
   }
   componentDidMount() {
     // console.log(this.props.logedUser)
-    // this.ajaxRequestTickets();
+    this.ajaxRequestTickets();
   }
 
-  componentDidUpdate(){
+  componentDidUpdate(prevProps){
+    console.log(this.props.logedUser)
     // console.log(this.props.reducer)
-    // if(this.props.logedUser){
-    //   this.ajaxRequestTickets();
-    // }
+    if(this.props.logedUser){
+      if(!this.state.rows)
+        this.ajaxRequestTickets();
+    }
   }
 
   handleClose = () => {
@@ -67,13 +77,12 @@ class BodyAdminTickets extends React.Component {
   ajaxRequestTickets() {
     if (!this.isLoading && this.props.logedUser) {
       this.isLoading = true;
-      this.request = new Ajax(`get-user-tickets/${this.props.logedUser.id}`);
+      this.request = new Ajax(`get-all-tickets`);
       this.request.result().then(response => {
+        this.isLoading=false;
         this.setState({
           rows: response.data,
         }, () => {
-          this.isLoading = false;
-          console.log(this.state.rows);
         })
       }).catch(err => {
         console.log(err + 'ajax err')
@@ -97,6 +106,54 @@ class BodyAdminTickets extends React.Component {
     });
   }
 
+  onClickDialog=(row)=>{
+    console.log(row)
+    this.setState({
+      title: row.title,
+      description: row.description,
+      status: row.status,
+      ticketIdSelected: row.id,
+      open: true,
+    });
+  }
+
+  onClickUpdateTicket(){
+    if (!this.isLoading) {
+      this.isLoading = true;
+      this.request = new Ajax(`update-ticket/${this.state.ticketIdSelected}`, {
+        method: 'POST',
+        body: {
+          title: this.state.title,
+          description: this.state.description,
+          status: this.state.status,
+        }
+      });
+      this.request.result().then(response => {
+        this.isLoading = false;
+        this.setState({open:false});
+        this.ajaxRequestTickets();
+      }).catch(err => {
+        console.log(err + 'ajax err')
+      });
+    }
+  }
+
+  onClickDelete(){
+    if (!this.isLoading) {
+      this.isLoading = true;
+      this.request = new Ajax(`delete/${this.state.ticketIdSelected}`, {
+        method: 'DELETE'
+      });
+      this.request.result().then(response => {
+        this.isLoading = false;
+        this.setState({open:false});
+        this.ajaxRequestTickets();
+      }).catch(err => {
+        console.log(err + 'ajax err')
+      });
+    }
+  }
+
   render() {
     const { classes } = this.props;
     const { fullScreen } = this.props
@@ -108,7 +165,7 @@ class BodyAdminTickets extends React.Component {
           onClose={this.handleClose}
           aria-labelledby="responsive-dialog-title"
         >
-          <DialogTitle id="responsive-dialog-title">{"Ingrese informacion de su solicitud"}</DialogTitle>
+          <DialogTitle id="responsive-dialog-title">{"Edite informacion de la solicitud"}</DialogTitle>
           <DialogContent>
             <TextField
               variant="outlined"
@@ -118,7 +175,7 @@ class BodyAdminTickets extends React.Component {
               id="title"
               label="Titulo"
               name="title"
-              error={this.state.isEmailEmpty}
+              // error={this.state.isEmailEmpty}
               autoFocus
               onChange={this.handleChange('title')}
               value={this.state.title}
@@ -136,33 +193,51 @@ class BodyAdminTickets extends React.Component {
               onChange={this.handleChange('description')}
               value={this.state.description}
             />
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              select
+              fullWidth
+              id="status"
+              label="status"
+              name="status"
+              onChange={this.handleChange('status')}
+              value={this.state.status}>
+                <MenuItem key={1} value={'En espera'}>
+                  En espera
+                </MenuItem>
+                <MenuItem key={2} value={'Atendiendo'}>
+                  Atendiendo
+                </MenuItem>
+                <MenuItem key={3} value={'Finalizado'}>
+                  Finalizado
+                </MenuItem>
+            </TextField>
           </DialogContent>
           <DialogActions>
+            <Button onClick={this.onClickDelete} align="left" disabled={this.isLoading}>
+              Eliminar Ticket
+            </Button>
             <Button onClick={this.handleClose} color="primary" disabled={this.isLoading}>
               Cancelar
             </Button>
-            <Button onClick={this.onClickNewTicket} color="primary" autoFocus disabled={this.isLoading}>
+            <Button onClick={this.onClickUpdateTicket} color="primary" autoFocus disabled={this.isLoading}>
               Aceptar
             </Button>
           </DialogActions>
         </Dialog>
-        <label htmlFor="contained-button-file">
-          <Button
-            variant="contained"
-            component="span"
-            className={classes.button}
-            onClick={this.openDialog}>
-            Solicitar Ticket
-        </Button>
-        </label>
         <Paper className={classes.root}>
           <Table className={classes.table}>
             <TableHead>
               <TableRow>
+                <TableCell align="left">Ticket ID</TableCell>
+                <TableCell align="left">User ID</TableCell>
                 <TableCell>Titulo</TableCell>
                 <TableCell >Descripcion</TableCell>
-                <TableCell align="right">Fecha/Hora</TableCell>
+                <TableCell>Fecha/Hora</TableCell>
                 <TableCell align="right">Status</TableCell>
+                <TableCell align="right">Edit</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -170,10 +245,20 @@ class BodyAdminTickets extends React.Component {
                 this.state.rows &&
                 this.state.rows.map(row => (
                 <TableRow key={row.id}>
+                  <TableCell align="left">{row.id}</TableCell>
+                  <TableCell align="left">{row.user_id}</TableCell>
                   <TableCell>{row.title}</TableCell>
                   <TableCell>{row.description}</TableCell>
-                  <TableCell align="right">{row.created_at}</TableCell>
+                  <TableCell>{row.created_at}</TableCell>
                   <TableCell align="right">{row.status}</TableCell>
+                  <TableCell align="right">
+                    <IconButton 
+                      aria-label="Delete" 
+                      className={classes.margin} 
+                      onClick={()=>this.onClickDialog(row)}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

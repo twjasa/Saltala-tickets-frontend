@@ -48,6 +48,7 @@ class SignIn extends React.Component {
       isPasswordEmpty: false,
       email: '',
       password: '',
+      message: '',
     };
     this.pressEnterOnPassword = this.pressEnterOnPassword.bind(this);
   }
@@ -93,21 +94,14 @@ class SignIn extends React.Component {
   }
 
   componentDidUpdate() {
-    // console.log(this.props.logedUser)
-    // if (this.props.logedUser) {
-    //   localStorage.setItem('vntstdtkn', JSON.stringify(this.props.reducer));
-    //   this.props.history.push('/tickets');
-    // }
-    console.log(this.props.reducer)
     if (this.props.tokenFromApi) {
       localStorage.setItem('vntstdtkn', JSON.stringify(this.props.reducer));
-      if (!this.props.history.location.state) {
-        return this.props.history.goBack();
-      }
-      if (this.props.history.location.state.fromSignIn || this.props.history.location.state.fromReset) {
-        return this.props.history.push('/');
-      }
+      if(this.props.reducer.logedUser.role === 'user')
+        this.props.history.push('/tickets');
+      else
+        this.props.history.push('/admin');
     }
+
   }
 
   pressEnterOnPassword(evnt) {
@@ -116,7 +110,7 @@ class SignIn extends React.Component {
     }
   }
 
-  componentDidMount(){
+  componentDidMount() {
     console.log(this.props.logedUser)
   }
 
@@ -164,6 +158,12 @@ class SignIn extends React.Component {
             value={this.state.password}
             onKeyDown={this.pressEnterOnPassword}
           />
+          {
+            this.props.requestError &&
+            <Typography variant="h6">
+              {this.props.requestError.message}
+            </Typography>
+          }
           <Button
             type="submit"
             fullWidth

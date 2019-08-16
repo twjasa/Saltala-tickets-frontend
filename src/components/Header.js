@@ -91,9 +91,11 @@ class MenuAppBar extends React.Component {
     const { auth, anchorEl } = this.state;
     const open = Boolean(anchorEl);
 
+    console.log(this.props.reducer);
     return (
       <div className={classes.root}>
-        <AppBar position="static">
+        <AppBar position="static" 
+          style={{ background: `${this.props.reducer.logedUser?this.props.reducer.logedUser.role==='admin'?'#000000':'':null}` }}>
           <Toolbar>
             <Typography variant="h6" className={classes.title} onClick={this.pushToHome}>
               Saltala Tickets
@@ -131,6 +133,7 @@ class MenuAppBar extends React.Component {
   }
 } export default withRouter(connect(
   state=>({
+    reducer: state.authReducer,
     user: state.authReducer.logedUser,
     state: state.authReducer,
   }),
