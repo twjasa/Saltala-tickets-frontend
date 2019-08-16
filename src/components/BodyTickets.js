@@ -107,7 +107,7 @@ class BodyTickets extends React.Component {
     this.setState({ open: true });
   }
 
-  onClickNewTicket() {
+  onClickNewTicket =()=> {
     if (this.state.description !== '' && this.state.title !== '')
       this.ajaxRequestPostTicket();
   }
@@ -165,10 +165,10 @@ class BodyTickets extends React.Component {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleClose} color="primary" disabled={this.isLoading}>
+            <Button onClick={this.handleClose} color="primary">
               Cancelar
             </Button>
-            <Button onClick={this.onClickNewTicket} color="primary" autoFocus disabled={this.isLoading}>
+            <Button onClick={this.onClickNewTicket} color="primary" autoFocus>
               Aceptar
             </Button>
           </DialogActions>
