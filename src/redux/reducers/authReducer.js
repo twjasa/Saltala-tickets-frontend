@@ -22,7 +22,7 @@ function authReducer(state = initialState, action) {
       return {
         ...state,
         loading: false,
-        successfullRequest: true,
+        successfulRequest: true,
         tokenData: {
           token: action.payload.access_token,
           token_type: action.payload.token_type,
@@ -30,10 +30,8 @@ function authReducer(state = initialState, action) {
         },
         logedUser: {
           id: action.payload.user.data.id,
-          username: action.payload.user.data.username,
           email: action.payload.user.data.email,
           role: action.payload.user.data.role,
-          profile: action.payload.user.profile
         }
       }
 
