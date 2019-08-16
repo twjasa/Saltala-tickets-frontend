@@ -1,4 +1,5 @@
-let baseUrl = 'https://localhost/api/';
+// let baseUrl = 'http://localhost/laravelprojects/saltala-tickets-api/public/api/';
+let baseUrl = 'http://127.0.0.1:8000/api/';
 let token = '';
 // request error timeout
 let timeout = (1000 * 60) * 1.5;
@@ -6,7 +7,8 @@ let timeout = (1000 * 60) * 1.5;
 
 let globalHeaders = {
     'Accept': 'application/json',
-    // 'Access-Control-Allow-Origin': '*'
+    'Application':'x-www-form-urlencoded',
+    'Access-Control-Allow-Origin': '*',
 }; 
 
 class Ajax {
